@@ -6,7 +6,7 @@
 /*   By: dmitrii <dmitrii@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/19 11:24:35 by dmitrii           #+#    #+#             */
-/*   Updated: 2024/11/03 15:08:25 by dmitrii          ###   ########.fr       */
+/*   Updated: 2024/11/18 13:43:04 by dmitrii          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ char	*ft_strchr(const char *s, int c)
 	return (NULL);
 }
 
-char	*ft_get_dirty_line(int fd, char *reminder, char *buffer)
+char	*ft_get_dirty_line(int fd, char **reminder, char *buffer)
 {
 	ssize_t	bts_read;
 	char	*temp;
@@ -63,21 +63,21 @@ char	*ft_get_dirty_line(int fd, char *reminder, char *buffer)
 	{
 		bts_read = read(fd, buffer, BUFFER_SIZE);
 		if (bts_read == -1)
-			return (free(reminder), reminder = NULL, NULL);
+			return (free(*reminder), *reminder = NULL, NULL);
 		if (bts_read == 0)
 			break ;
 		buffer[bts_read] = '\0';
-		if (!reminder)
-			reminder = ft_strdup("");
-		temp = reminder;
-		reminder = ft_strjoin(reminder, buffer);
+		if (!(*reminder))
+			*reminder = ft_strdup("");
+		temp = *reminder;
+		*reminder = ft_strjoin(*reminder, buffer);
 		free(temp);
-		if (!reminder)
+		if (!(*reminder))
 			return (NULL);
 		if (ft_strchr(buffer, '\n'))
 			break ;
 	}
-	return (reminder);
+	return (*reminder);
 }
 
 char	*ft_get_reminder(char **line)
@@ -106,7 +106,7 @@ char	*get_next_line(int fd)
 	static char	*reminder;
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 	{
 		free(reminder);
 		reminder = NULL;
@@ -115,7 +115,7 @@ char	*get_next_line(int fd)
 	buffer = (char *)malloc(BUFFER_SIZE + 1);
 	if (!buffer)
 		return (NULL);
-	line = ft_get_dirty_line(fd, reminder, buffer);
+	line = ft_get_dirty_line(fd, &reminder, buffer);
 	free(buffer);
 	if (!line)
 		return (NULL);
